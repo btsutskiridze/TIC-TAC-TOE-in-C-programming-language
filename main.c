@@ -10,15 +10,15 @@
 
 
 char board[3][3]; //board
-const char PLAYER = 'X'; 
-const char COMPUTER = 'O';  
+const char PLAYER = 'X';
+const char COMPUTER = 'O';
 const char PLAYER2 = 'O';
 
 //menu part
 void startMenu(); //done
 void gameMode(); //done
 void gameRules(); //done
-void gameHistory(); // isn't started 
+void gameHistory(); // isn't started
 
 void playWithComputer(int); //easy part is done working on hard mode
 void playWithHuman(); //done
@@ -46,7 +46,7 @@ int main(){
 //menu part
 void startMenu(){
   char option;
-  printf("\t\t\tChoose an option:\n");
+  printf("\n\t\t\tChoose an option:\n");
   printf("\t\t\t______________________\n");
   printf("\t\t\t1. Start Game\n");
   printf("\t\t\t2. Rules of the Game\n");
@@ -58,11 +58,11 @@ void startMenu(){
     option = getch();
     switch (option)
     {
-      case '1': 
+      case '1':
         system("cls");
         gameMode();
         break;
-      case '2': 
+      case '2':
         system("cls");
         gameRules();
         break;
@@ -89,8 +89,8 @@ void gameMode(){
     system("cls");
     char lvl;
     printf("\n\n\t\t\tChoose difficulty level:\n");
-    printf("\n\n\t\t\t1. Beginner\n");
-    printf("\n\n\t\t\t2. Proffesional\n");
+    printf("\n\t\t\t1. Beginner\n");
+    printf("\t\t\t2. Proffesional\n");
     do
     {
       printf("\t\t\t\t");
@@ -101,11 +101,11 @@ void gameMode(){
       else if(lvl == '2'){
         playWithComputer(1);
       }
-      else{ 
-        printf("\t\t\tInvalid Option\n");  
+      else{
+        printf("\t\t\tInvalid Option\n");
       }
     } while (lvl != '1' || lvl != '2');
-    
+
   }
   else if(option == '2'){
     playWithHuman();
@@ -116,11 +116,11 @@ void gameMode(){
 }
 
 void gameRules(){
-  printf("\n\n\t\t1. The game is played on a grid that's 3 squares by 3 squares.\n\n");
-  printf("\t\t2. You are X, your friend (or the computer in this case) is O. Players take turns putting their marks in empty squares.\n\n");
-  printf("\t\t3. The first player to get 3 of her marks in a row (up, down, across, or diagonally) is the winner.\n\n");
-  printf("\t\t4. When all 9 squares are full, the game is over. If no player has 3 marks in a row, the game ends in a tie.\n\n");
-  
+  printf("\n\n\t\t1. The game is played on a grid \n\t\t that's 3 squares by 3 squares.\n\n");
+  printf("\t\t2. You are X, your friend (or the computer in this case) is O.\n\t\t Players take turns putting their marks in empty squares.\n\n");
+  printf("\t\t3. The first player to get 3 of her marks \n\t\t in a row (up, down, across, or diagonally) is the winner.\n\n");
+  printf("\t\t4. When all 9 squares are full, the game is over.\n\t\t If no player has 3 marks in a row, the game ends in a tie.\n\n");
+
   printf("\t\tPRESS ANY KEY TO GO BACK TO THE MENU\n");
   char press;
   press = getch();
@@ -129,12 +129,12 @@ void gameRules(){
 }
 
 void gameHistory(){
-  
+
 }
 
 void playWithComputer(int n){
   if(n == 0){ // easy mode
-    char choice;  
+    char choice;
     do{//looping
       char winner = ' ';
       resetBoard();
@@ -157,10 +157,9 @@ void playWithComputer(int n){
       printBoard();
       printWinner(winner);
 
-      printf("\n\t\t\t\tTHANKS FOR PLAYING :)\n");
-      printf("\n\t\t\t\tWould you like to continue the game?\n");
-      printf("\n\t\t\t\t (Y - Play Again // N - Back to Menu)\n");
-      printf("\n\t\t\t\t\t\t");
+      printf("\n\t\t\tWould you like to continue the game?\n");
+      printf("\n\t\t\t(Y - Play Again // N - Back to Menu)\n");
+      printf("\n\t\t\t\t\t");
       choice = getch();
       system("cls");
     }while(choice =='Y' || choice == 'y');
@@ -168,7 +167,7 @@ void playWithComputer(int n){
     startMenu();
   }
   else if (n == 1){ //hard mode
-    char choice;  
+    char choice;
     do{//looping
       char winner = ' ';
       resetBoard();
@@ -204,7 +203,7 @@ void playWithComputer(int n){
 }
 
 void playWithHuman(){
-  char choice;  
+  char choice;
   do{//looping
     char winner = ' ';
     resetBoard();
@@ -229,10 +228,9 @@ void playWithHuman(){
     printBoard();
     print2PlayerWinner(winner);
 
-    printf("\n\t\t\t\tTHANKS FOR PLAYING :)\n");
-    printf("\n\t\t\t\tWould you like to continue the game?\n");
-    printf("\n\t\t\t\t (Y - Play Again // N - Back to Menu)\n");
-    printf("\n\t\t\t\t\t\t");
+    printf("\n\t\t\tWould you like to continue the game?\n");
+    printf("\n\t\t\t(Y - Play Again // N - Back to Menu)\n");
+    printf("\n\t\t\t\t\t");
     choice = getch();
     system("cls");
   }while(choice =='Y' || choice == 'y');
@@ -244,8 +242,9 @@ void playWithHuman(){
 
 //structure part
 void resetBoard(){
-  for(int i = 0; i < 3; i++){
-    for(int j = 0; j < 3; j++){
+  int i,j;
+  for(i = 0; i < 3; i++){
+    for(j = 0; j < 3; j++){
       board[i][j]= ' ';
     }
   }
@@ -264,8 +263,9 @@ void printBoard(){
 
 int checkSpaces(){
   int freeSpaces = 9;
-  for(int i = 0; i < 3; i++){
-    for(int j = 0; j < 3; j++){
+  int i,j;
+  for(i = 0; i < 3; i++){
+    for(j = 0; j < 3; j++){
       if(board[i][j] != ' '){
         freeSpaces--;
       }
@@ -293,7 +293,7 @@ void firstPlayerMove(){
       break;
     }
   } while (board[x][y]!= ' ');
-  
+
 }
 
 void secondPlayerMove(){
@@ -336,7 +336,8 @@ void computerEasyMove(){
 
 void computerHardMove(){
   if(checkSpaces()> 0){
-    for(int i = 0; i < 3; i++){
+    int i;
+    for(i = 0; i < 3; i++){
       //columns check
       if(board[i][0] == COMPUTER && board[i][1] == COMPUTER){
         if(board[i][2] == ' '){
@@ -421,9 +422,8 @@ void computerHardMove(){
           return;
         }
       }
-    
-    }
 
+    }
 
     //diagonals check
     //first diag
@@ -543,37 +543,6 @@ void computerHardMove(){
       }
     }
 
-/*
-    if( board[1][1] == PLAYER ){
-      int k = rand() % 4;
-      if(k == 0){
-        if(board [0][0] == ' ')
-          board[0][0] = COMPUTER;
-        else
-          computerEasyMove();
-      }
-      if(k == 1){
-        if(board[0][2] == ' ')
-          board[0][2] = COMPUTER;
-        else 
-          computerEasyMove();
-
-      }
-      else if (k == 2){
-        if(board[2][0] =' ')
-          board[2][0] = COMPUTER;
-        else 
-          computerEasyMove();
-      }
-      else if (k == 3){
-        if(board[2][2] == ' ')
-          board[2][2] == COMPUTER;
-        else
-          computerEasyMove();
-      }
-      return;
-    }
-*/
 
     if(board[0][1] == PLAYER|| board[1][2] == PLAYER || board [2][1] == PLAYER || board[1][0] || board[1][1]){ //maybe leave board[1][1] there
       computerEasyMove();
@@ -602,7 +571,6 @@ void computerHardMove(){
         return;
       }
     }
-  
   }
   else{
     printWinner(' ');
@@ -611,12 +579,13 @@ void computerHardMove(){
 
 
 char checkWinner(){
-  for(int i = 0; i < 3; i++){ //column checks
+  int i;
+  for(i = 0; i < 3; i++){ //column checks
     if(board[i][0] == board[i][1] && board[i][0] == board[i][2]){
       return board[i][0];
     }
-  }  
-  for(int i = 0; i < 3; i++){ //row checks
+  }
+  for(i = 0; i < 3; i++){ //row checks
     if(board[0][i] == board[1][i] && board[0][i] == board[2][i]){
       return board[0][i];
     }
@@ -632,24 +601,36 @@ char checkWinner(){
 
 void printWinner(char winner){
   if(winner == PLAYER){
+    printf("\t\t\t************************************\n");
     printf("\t\t\t\tYOU WIN!\n\t\t\t\tCONGRATULATIONS!!\n");
+    printf("\t\t\t************************************\n");
   }
   else if(winner == COMPUTER){
+    printf("\t\t\t************************************\n");
     printf("\t\t\t\tYOU LOSE :(\n\t\t\t\tBETTER LUCK NEXT TIME :)\n");
+    printf("\t\t\t************************************\n");
   }
   else {
+    printf("\t\t\t************************************\n");
     printf("\t\t\t\tIT'S A TIE :|\n");
+    printf("\t\t\t************************************\n");
   }
 }
 
 void print2PlayerWinner(char winner){
   if(winner == PLAYER){
+    printf("\t\t\t************************************\n");
     printf("\t\t\t\tXPLAYER X WINS!!\n");
+    printf("\t\t\t************************************\n");
   }
   else if(winner == PLAYER2){
+    printf("\t\t\t************************************\n");
     printf("\t\t\t\tPLAYER O WINS!!\n");
+    printf("\t\t\t************************************\n");
   }
   else {
+    printf("\t\t\t************************************\n");
     printf("\t\t\t\tIT'S A TIE :|\n");
+    printf("\t\t\t************************************\n");
   }
 }
