@@ -2,41 +2,33 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h> //for getch()
-#include <time.h> // for srand()
-
-/*************** TIC TAC TOE GAME ***************/
-
-//********** WILL Add computerHardMove() and gameHisotry() functons ***********
-
 
 char board[3][3]; //board
-const char PLAYER = 'X'; 
-const char COMPUTER = 'O';  
+char PLAYER = 'X';
+char COMPUTER = 'O';
 const char PLAYER2 = 'O';
 
 //menu part
-void startMenu(); //done
-void gameMode(); //done
-void gameRules(); //done
-void gameHistory(); // isn't started 
+void startMenu();
+void gameMode();
+void gameHistory();
 
-void playWithComputer(int); //easy part is done working on hard mode
-void playWithHuman(); //done
+void playWithComputer(int);
+void playWithHuman();
 //game structure
-void resetBoard(); //done
-void printBoard(); //done
-int checkSpaces(); //done
-void firstPlayerMove(); //done
-void secondPlayerMove(); //done
-void computerEasyMove(); // done
-void computerHardMove(); // doing now
-char checkWinner(); //done
-void printWinner(char); //done
-void print2PlayerWinner(char); //done
+void resetBoard();
+void printBoard();
+int checkSpaces();
+void playerMove(char);
+void computerEasyMove();
+void computerHardMove();
+char checkWinner();
+void printWinner(char);
+void addHistory(char*,char*); 
+unsigned long lfsr32(unsigned long seed);
 
-
+//driver
 int main(){
-  srand(time(0));
   printf("\n\n\t\t\tWELCOME!!\n");
   printf("\t\t\tTHIS IS A TIC TAC TOE GAME\n\n");
   startMenu();
@@ -46,31 +38,27 @@ int main(){
 //menu part
 void startMenu(){
   char option;
-  printf("\t\t\tChoose an option:\n");
+  printf("\n\t\t\tChoose an option:\n");
   printf("\t\t\t______________________\n");
   printf("\t\t\t1. Start Game\n");
-  printf("\t\t\t2. Rules of the Game\n");
-  printf("\t\t\t3. Gameplay History\n");
-  printf("\t\t\t4. Quit the Game\n");
+  printf("\t\t\t2. Gameplay History\n");
+  printf("\t\t\t3. Quit the Game\n");
   printf("\t\t\t----------------------\n");
   while(1){
     printf("\t\t\t");
     option = getch();
     switch (option)
     {
-      case '1': 
+      case '1':
         system("cls");
         gameMode();
         break;
-      case '2': 
-        system("cls");
-        gameRules();
-        break;
-      case '3':
+      case '2':
         system("cls");
         gameHistory();
         break;
-      case '4':
+      case '3':
+        remove("history.txt");
         exit(1);
       default:
         printf("Invalid option!! CHOOSE AGAIN\n");
@@ -86,11 +74,36 @@ void gameMode(){
   char option;
   option = getch();
   if(option == '1'){
+    //asking what user wants to be
+    system("cls");
+    char sign;
+    printf("\n\n\t\t\tChoose what you want to play\n");
+    printf("\n\t\t\t\t1. X\n");
+    printf("\t\t\t\t2. O\n");
+    while(1){
+      printf("\n\t\t\t");
+      sign = getch();
+      if(sign == '2'){
+        PLAYER = 'O';
+        COMPUTER = 'X';
+        break;
+      }
+      else if(sign == '1'){
+        PLAYER = 'X';
+        COMPUTER = 'O';
+        break;
+      }
+      else {
+        printf("\t\t\tInvalid Option\n");
+        continue;
+      }
+    }
+    //then ask difficulty level
     system("cls");
     char lvl;
     printf("\n\n\t\t\tChoose difficulty level:\n");
-    printf("\n\n\t\t\t1. Beginner\n");
-    printf("\n\n\t\t\t2. Proffesional\n");
+    printf("\n\t\t\t1. Beginner\n");
+    printf("\t\t\t2. Proffesional\n");
     do
     {
       printf("\t\t\t\t");
@@ -101,11 +114,10 @@ void gameMode(){
       else if(lvl == '2'){
         playWithComputer(1);
       }
-      else{ 
-        printf("\t\t\tInvalid Option\n");  
+      else{
+        printf("\t\t\tInvalid Option\n");
       }
     } while (lvl != '1' || lvl != '2');
-    
   }
   else if(option == '2'){
     playWithHuman();
@@ -115,110 +127,92 @@ void gameMode(){
   }
 }
 
-void gameRules(){
-  printf("\n\n\t\t1. The game is played on a grid that's 3 squares by 3 squares.\n\n");
-  printf("\t\t2. You are X, your friend (or the computer in this case) is O. Players take turns putting their marks in empty squares.\n\n");
-  printf("\t\t3. The first player to get 3 of her marks in a row (up, down, across, or diagonally) is the winner.\n\n");
-  printf("\t\t4. When all 9 squares are full, the game is over. If no player has 3 marks in a row, the game ends in a tie.\n\n");
-  
-  printf("\t\tPRESS ANY KEY TO GO BACK TO THE MENU\n");
-  char press;
-  press = getch();
+void gameHistory(){
+  FILE *filePtr = fopen("history.txt", "r");
+  int counter = 0;
+  if (filePtr == NULL){
+        printf("Error opening the file history.txt\n");
+        return;
+  }
+  printf("\n\t\t\t\tGAME HISTORY\n");
+  printf("\t\t\t---------------------------\n\n");
+  char text[50];
+  while(fgets(text, 50, filePtr)){
+    printf("\t\t\tN%d. %s", ++counter,text);
+  } 
+  fclose(filePtr);
+  getch();
   system("cls");
   startMenu();
 }
 
-void gameHistory(){
-  
-}
-
 void playWithComputer(int n){
-  if(n == 0){ // easy mode
-    char choice;  
+    char choice;
     do{//looping
       char winner = ' ';
       resetBoard();
       while(winner == ' ' && checkSpaces()!=0 ){
         system("cls");
         printBoard();
-        firstPlayerMove();
+        if(PLAYER == 'X')
+          playerMove(PLAYER);
+        else{ 
+          if(n == 0)
+            computerEasyMove();
+          if(n == 1)
+            computerHardMove();
+        }
         winner = checkWinner();
         if(winner != ' ' || checkSpaces() == 0){
           break;
         }
-        computerEasyMove();
-        winner = checkWinner();
-        if(winner != ' ' || checkSpaces() == 0){
-          break;
-        }
-        system("cls");
-      }
-      system("cls");
-      printBoard();
-      printWinner(winner);
-
-      printf("\n\t\t\t\tTHANKS FOR PLAYING :)\n");
-      printf("\n\t\t\t\tWould you like to continue the game?\n");
-      printf("\n\t\t\t\t (Y - Play Again // N - Back to Menu)\n");
-      printf("\n\t\t\t\t\t\t");
-      choice = getch();
-      system("cls");
-    }while(choice =='Y' || choice == 'y');
-    //calling the startMenu again
-    startMenu();
-  }
-  else if (n == 1){ //hard mode
-    char choice;  
-    do{//looping
-      char winner = ' ';
-      resetBoard();
-      while(winner == ' ' && checkSpaces()!=0 ){
         system("cls");
         printBoard();
-        firstPlayerMove();
+        if(COMPUTER == 'O'){
+          if(n == 0)
+            computerEasyMove();
+          if(n == 1)
+            computerHardMove();
+        }
+        else
+          playerMove(PLAYER);
         winner = checkWinner();
         if(winner != ' ' || checkSpaces() == 0){
           break;
         }
-        computerHardMove();
-        winner = checkWinner();
-        if(winner != ' ' || checkSpaces() == 0){
-          break;
-        }
-        system("cls");
       }
       system("cls");
       printBoard();
       printWinner(winner);
-
-      printf("\n\t\t\t\tTHANKS FOR PLAYING :)\n");
-      printf("\n\t\t\t\tWould you like to continue the game?\n");
-      printf("\n\t\t\t\t (Y - Play Again // N - Back to Menu)\n");
-      printf("\n\t\t\t\t\t\t");
+      if(winner == PLAYER) addHistory("Player","Computer");
+      else addHistory("Computer","Player");
+      printf("\n\t\t\tWould you like to continue the game?\n");
+      printf("\n\t\t\t(Y - Play Again // N - Back to Menu)\n");
+      printf("\n\t\t\t\t\t");
       choice = getch();
       system("cls");
     }while(choice =='Y' || choice == 'y');
     //calling the startMenu again
     startMenu();
-  }
 }
 
 void playWithHuman(){
-  char choice;  
+  char choice;
+  PLAYER = 'X';
   do{//looping
     char winner = ' ';
     resetBoard();
     while(winner == ' ' && checkSpaces()!=0 ){
       system("cls");
       printBoard();
-      firstPlayerMove();
+      playerMove(PLAYER);
       winner = checkWinner();
       if(winner != ' ' || checkSpaces() == 0){
         break;
       }
       system("cls");
       printBoard();
-      secondPlayerMove();
+      playerMove(PLAYER2);
       winner = checkWinner();
       if(winner != ' ' || checkSpaces() == 0){
         break;
@@ -227,12 +221,12 @@ void playWithHuman(){
     }
     system("cls");
     printBoard();
-    print2PlayerWinner(winner);
-
-    printf("\n\t\t\t\tTHANKS FOR PLAYING :)\n");
-    printf("\n\t\t\t\tWould you like to continue the game?\n");
-    printf("\n\t\t\t\t (Y - Play Again // N - Back to Menu)\n");
-    printf("\n\t\t\t\t\t\t");
+    printWinner(winner);  
+    if(winner == PLAYER) addHistory("Player 1","Player 2");
+    else addHistory("Player 2","Player 1");
+    printf("\n\t\t\tWould you like to continue the game?\n");
+    printf("\n\t\t\t(Y - Play Again // N - Back to Menu)\n");
+    printf("\n\t\t\t\t\t");
     choice = getch();
     system("cls");
   }while(choice =='Y' || choice == 'y');
@@ -241,11 +235,11 @@ void playWithHuman(){
 
 }
 
-
 //structure part
 void resetBoard(){
-  for(int i = 0; i < 3; i++){
-    for(int j = 0; j < 3; j++){
+  int i,j;
+  for(i = 0; i < 3; i++){
+    for(j = 0; j < 3; j++){
       board[i][j]= ' ';
     }
   }
@@ -264,8 +258,9 @@ void printBoard(){
 
 int checkSpaces(){
   int freeSpaces = 9;
-  for(int i = 0; i < 3; i++){
-    for(int j = 0; j < 3; j++){
+  int i,j;
+  for(i = 0; i < 3; i++){
+    for(j = 0; j < 3; j++){
       if(board[i][j] != ' '){
         freeSpaces--;
       }
@@ -274,9 +269,9 @@ int checkSpaces(){
   return freeSpaces;
 }
 
-void firstPlayerMove(){
+void playerMove(char player){
   int x,y;
-  printf("\n\t\t\t\tPLAYER X MOVE:\n\n");
+  printf("\n\t\t\t\tPLAYER %c MOVE:\n\n",player);
   do
   {
     printf("\t\t\t\tEnter row #(1-3): ");
@@ -289,42 +284,25 @@ void firstPlayerMove(){
       printf("\t\t\t\tInvalid Move!!\n");
     }
     else{
-      board[x][y] = PLAYER;
+      board[x][y] = player;
       break;
     }
   } while (board[x][y]!= ' ');
-  
-}
 
-void secondPlayerMove(){
-  int x,y;
-  printf("\n\t\t\t\tPLAYER O MOVE:\n\n");
-  do
-  {
-    printf("\t\t\t\tEnter row #(1-3): ");
-    scanf("%d", &x);
-    x--;
-    printf("\t\t\t\tEnter column #(1-3): ");
-    scanf("%d", &y);
-    y--;
-    if(board[x][y]!=' '){
-      printf("\t\t\t\tInvalid Move!!\n");
-    }
-    else{
-      board[x][y] = PLAYER2;
-      break;
-    }
-  } while (board[x][y]!= ' ');
 }
 
 void computerEasyMove(){
   int x;
   int y;
+  static unsigned long firstSeed = 0x5AA5F100;
+  static unsigned long secondSeed = 0x5AA5F700;
 
   if(checkSpaces() > 0){
     do{
-      x = rand() % 3;
-      y = rand() % 3;
+      firstSeed = lfsr32(firstSeed);
+      secondSeed = lfsr32(secondSeed);
+      x = firstSeed % 3;
+      y = secondSeed % 3;
     }while(board[x][y]!=' ');
     board[x][y] = COMPUTER;
   }
@@ -333,100 +311,104 @@ void computerEasyMove(){
   }
 }
 
-
 void computerHardMove(){
   if(checkSpaces()> 0){
-    for(int i = 0; i < 3; i++){
-      //columns check
+    int i;
+    for(i = 0; i < 3; i++){
+      //rows check for computer
       if(board[i][0] == COMPUTER && board[i][1] == COMPUTER){
         if(board[i][2] == ' '){
           board[i][2] = COMPUTER;
           return;
         }
+        continue;
       }
-      if(board[i][0] == PLAYER && board[i][1] == PLAYER){
-        if(board[i][2] == ' '){
-          board[i][2] = COMPUTER;
-          return;
-        }
-      }
-
-
       if(board[i][1] == COMPUTER && board[i][2] == COMPUTER){
         if(board[i][0] == ' '){
           board[i][0] = COMPUTER;
           return;
         }
+        continue;
+
+      }
+      if(board[i][0] == COMPUTER && board[i][2] == COMPUTER){
+        if(board[i][1] == ' '){
+          board[i][1] = COMPUTER;
+          return;
+        }
+        continue;
+
+      }
+      //columns check for computer
+      if(board[0][i] == COMPUTER && board[1][i] == COMPUTER){
+        if(board[2][i] == ' '){
+          board[2][i] = COMPUTER;
+          return;
+        }
+        continue;
+
+      }
+      if(board[1][i] == COMPUTER && board[2][i] == COMPUTER){
+        if(board[0][i] == ' '){
+          board[0][i] = COMPUTER;
+          return;
+        }
+        continue;
+
+      }
+      if(board[0][i] == COMPUTER && board[2][i] == COMPUTER){
+        if(board[1][i] == ' '){
+          board[1][i] = COMPUTER;
+          return;
+        }
+        continue;
+      }
+      //rows check for player
+      if(board[i][0] == PLAYER && board[i][1] == PLAYER){
+        if(board[i][2] == ' '){
+          board[i][2] = COMPUTER;
+          return;
+        }
+        continue;
       }
       if(board[i][1] == PLAYER && board[i][2] == PLAYER){
         if(board[i][0] == ' '){
           board[i][0] = COMPUTER;
           return;
         }
-      }
-
-
-      if(board[i][0] == COMPUTER && board[i][2] == COMPUTER){
-        if(board[i][1] == ' '){
-          board[i][1] = COMPUTER;
-          return;
-        }
+        continue;
       }
       if(board[i][0] == PLAYER && board[i][2] == PLAYER){
         if(board[i][1] == ' '){
           board[i][1] = COMPUTER;
           return;
         }
+        continue;
       }
-
-
-      //rows check
-      if(board[0][i] == COMPUTER && board[1][i] == COMPUTER){
-        if(board[2][i] == ' '){
-          board[2][i] = COMPUTER;
-          return;
-        }
-      }
+      //columns check for player
       if(board[0][i] == PLAYER && board[1][i] == PLAYER){
         if(board[2][i] == ' '){
           board[2][i] = COMPUTER;
           return;
         }
-      }
-
-
-      if(board[1][i] == COMPUTER && board[2][i] == COMPUTER){
-        if(board[0][i] == ' '){
-          board[0][i] = COMPUTER;
-          return;
-        }
+        continue;
       }
       if(board[1][i] == PLAYER && board[2][i] == PLAYER){
         if(board[0][i] == ' '){
           board[0][i] = COMPUTER;
           return;
         }
-      }
-
-
-      if(board[0][i] == COMPUTER && board[2][i] == COMPUTER){
-        if(board[1][i] == ' '){
-          board[1][i] = COMPUTER;
-          return;
-        }
+        continue;
       }
       if(board[0][i] == PLAYER && board[2][i] == PLAYER){
         if(board[1][i] == ' '){
           board[1][i] = COMPUTER;
           return;
         }
+        continue;
       }
-    
     }
-
-
-    //diagonals check
-    //first diag
+    //first diag diagonal check for computer
     if(board[0][0] == COMPUTER && board[1][1] == COMPUTER){
       if(board[2][2] == ' '){
         board[2][2] = COMPUTER;
@@ -437,24 +419,56 @@ void computerHardMove(){
         return;
       }
     }
-    if(board[0][0] == PLAYER && board[1][1] == PLAYER){
-      if(board[2][2] == ' '){
-        board[2][2] = COMPUTER;
-        return;
-      }
-      else if(board[2][2] == COMPUTER){
-        computerEasyMove();
-        return;
-      }
-    }
-
-
     if(board[1][1] == COMPUTER && board[2][2] == COMPUTER){
       if(board[0][0] == ' '){
         board[0][0] = COMPUTER;
         return;
       }
       else if(board[0][0] == COMPUTER){
+        computerEasyMove();
+        return;
+      }
+    }
+    if(board[0][0] == COMPUTER && board[2][2] == COMPUTER){
+      if(board[1][1] == ' '){
+        board[1][1] = COMPUTER;
+        return;
+      }
+      else if(board[1][1] == COMPUTER){
+        computerEasyMove();
+        return;
+      }
+    }
+    //second diagonal check for player
+    if(board[0][2] == COMPUTER && board[1][1] == COMPUTER){
+      if(board[2][0] == ' '){
+        board[2][0] = COMPUTER;
+        return;
+      }
+    }
+    if(board[1][1] == COMPUTER && board[2][0] == COMPUTER){
+      if(board[0][2] == ' '){
+        board[0][2] = COMPUTER;
+        return;
+      }
+    }
+    if(board[0][2] == COMPUTER && board[2][0] == COMPUTER){
+      if(board[1][1] == ' '){
+        board[1][1] = COMPUTER;
+        return;
+      }
+      else if(board[1][1] == COMPUTER){
+        computerEasyMove();
+        return;
+      }
+    }
+    //first diagonal check for Computer
+    if(board[0][0] == PLAYER && board[1][1] == PLAYER){
+      if(board[2][2] == ' '){
+        board[2][2] = COMPUTER;
+        return;
+      }
+      else if(board[2][2] == COMPUTER){
         computerEasyMove();
         return;
       }
@@ -469,18 +483,6 @@ void computerHardMove(){
         return;
       }
     }
-
-
-    if(board[0][0] == COMPUTER && board[2][2] == COMPUTER){
-      if(board[1][1] == ' '){
-        board[1][1] = COMPUTER;
-        return;
-      }
-      else if(board[1][1] == COMPUTER){
-        computerEasyMove();
-        return;
-      }
-    }
     if(board[0][0] == PLAYER && board[2][2] == PLAYER){
       if(board[1][1] == ' '){
         board[1][1] = COMPUTER;
@@ -491,44 +493,16 @@ void computerHardMove(){
         return;
       }
     }
-
-
-    //second diag
-    if(board[0][2] == COMPUTER && board[1][1] == COMPUTER){
-      if(board[2][0] == ' '){
-        board[2][0] = COMPUTER;
-        return;
-      }
-    }
+    //second diag check for player
     if(board[0][2] == PLAYER && board[1][1] == PLAYER){
       if(board[2][0] == ' '){
         board[2][0] = COMPUTER;
         return;
       }
     }
-
-
-    if(board[1][1] == COMPUTER && board[2][0] == COMPUTER){
-      if(board[0][2] == ' '){
-        board[0][2] = COMPUTER;
-        return;
-      }
-    }
     if(board[1][1] == PLAYER && board[2][0] == PLAYER){
       if(board[0][2] == ' '){
         board[0][2] = COMPUTER;
-        return;
-      }
-    }
-
-
-    if(board[0][2] == COMPUTER && board[2][0] == COMPUTER){
-      if(board[1][1] == ' '){
-        board[1][1] = COMPUTER;
-        return;
-      }
-      else if(board[1][1] == COMPUTER){
-        computerEasyMove();
         return;
       }
     }
@@ -542,81 +516,48 @@ void computerHardMove(){
         return;
       }
     }
-
-/*
-    if( board[1][1] == PLAYER ){
-      int k = rand() % 4;
-      if(k == 0){
-        if(board [0][0] == ' ')
-          board[0][0] = COMPUTER;
-        else
-          computerEasyMove();
-      }
-      if(k == 1){
-        if(board[0][2] == ' ')
-          board[0][2] = COMPUTER;
-        else 
-          computerEasyMove();
-
-      }
-      else if (k == 2){
-        if(board[2][0] =' ')
-          board[2][0] = COMPUTER;
-        else 
-          computerEasyMove();
-      }
-      else if (k == 3){
-        if(board[2][2] == ' ')
-          board[2][2] == COMPUTER;
-        else
-          computerEasyMove();
-      }
-      return;
-    }
-*/
-
+    //side middle positions
     if(board[0][1] == PLAYER|| board[1][2] == PLAYER || board [2][1] == PLAYER || board[1][0] || board[1][1]){ //maybe leave board[1][1] there
       computerEasyMove();
       return;
     }
-
+    //corner positions
     if(board[0][0] == PLAYER || board[0][2] == PLAYER || board[2][0] == PLAYER || board[2][2] == PLAYER ){
       if(board[1][1] == ' '){
         board[1][1] = COMPUTER;
         return;
       }
       if(board[0][0] == ' '){
-        board[0][0] == COMPUTER;
+        board[0][0] = COMPUTER;
         return;
       }
       if(board[0][2] == ' '){
-        board[0][2] == COMPUTER;
+        board[0][2] = COMPUTER;
         return;
       }
       if(board[2][0] == ' '){
-        board[2][0] == COMPUTER;
+        board[2][0] = COMPUTER;
         return;
       }
       if(board[2][2] == ' '){
-        board[2][2] == COMPUTER;
+        board[2][2] = COMPUTER;
         return;
       }
     }
-  
   }
   else{
     printWinner(' ');
   }
 }
 
-
 char checkWinner(){
-  for(int i = 0; i < 3; i++){ //column checks
+  int i;
+  for(i = 0; i < 3; i++){ //column checks
     if(board[i][0] == board[i][1] && board[i][0] == board[i][2]){
       return board[i][0];
     }
-  }  
-  for(int i = 0; i < 3; i++){ //row checks
+  }
+  for(i = 0; i < 3; i++){ //row checks
     if(board[0][i] == board[1][i] && board[0][i] == board[2][i]){
       return board[0][i];
     }
@@ -631,25 +572,51 @@ char checkWinner(){
 }
 
 void printWinner(char winner){
-  if(winner == PLAYER){
-    printf("\t\t\t\tYOU WIN!\n\t\t\t\tCONGRATULATIONS!!\n");
+if(winner == PLAYER){
+    printf("\t\t\t************************************\n");
+    printf("\t\t\t\tPLAYER %c WINS!!\n", PLAYER);
+    printf("\t\t\t************************************\n");
+  }
+  else if(winner == PLAYER2){
+    printf("\t\t\t************************************\n");
+    printf("\t\t\t\tPLAYER O WINS!!\n");
+    printf("\t\t\t************************************\n");
   }
   else if(winner == COMPUTER){
-    printf("\t\t\t\tYOU LOSE :(\n\t\t\t\tBETTER LUCK NEXT TIME :)\n");
+    printf("\t\t\t************************************\n");
+    printf("\t\t\tCOMPUTER WINS!! BETTER LUCK NEXT TIME!\n");
+    printf("\t\t\t************************************\n");
   }
   else {
+    printf("\t\t\t************************************\n");
     printf("\t\t\t\tIT'S A TIE :|\n");
+    printf("\t\t\t************************************\n");
   }
 }
 
-void print2PlayerWinner(char winner){
-  if(winner == PLAYER){
-    printf("\t\t\t\tXPLAYER X WINS!!\n");
+void addHistory(char winner[], char loser[]){
+  FILE* filePtr = fopen("history.txt", "a");
+  if (filePtr == NULL){
+    printf("Error opening the file history.txt\n");
+    return;
   }
-  else if(winner == PLAYER2){
-    printf("\t\t\t\tPLAYER O WINS!!\n");
+  if(checkWinner() == ' '){
+    fprintf(filePtr,"%s and %s had a tie!\n", winner, loser);
   }
-  else {
-    printf("\t\t\t\tIT'S A TIE :|\n");
-  }
+  fprintf(filePtr,"%s won against %s\n", winner, loser);
+  fclose(filePtr);
+}
+
+unsigned long lfsr32(unsigned long seed){
+    if(seed == 0)//if seed is equal 0 it will return the next 32-bit value
+        return seed + 1;
+    unsigned long new_bit;//creating new bit
+    for(int i = 0; i< 32; i++){//calculating new bit
+    //feedback polinomial: x^32 + x^30 + x^26 + x^25 + 1
+    //               /tap 32/      /tap 30/      /tap 26/      /tap 25/
+        new_bit = ( (seed >> 0) ^ (seed >> 2) ^ (seed >> 6) ^ (seed >> 7) ) & 1;
+        //shifting seed to the right and putting new bit at the front shifted by 31-bit
+        seed = (seed >> 1) | (new_bit << 31);
+    }
+    return seed;//returning seed
 }
